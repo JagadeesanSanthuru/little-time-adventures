@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Little Time Adventures</title>
+<style>
+:root{--ink:#27345b;--pink:#ff83ad;--yellow:#ffd76b;--blue:#8edcff;--mint:#a7edcf;--paper:#fffdf8}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:"Trebuchet MS",Arial,sans-serif;color:var(--ink);background:linear-gradient(135deg,#fff0f6,#e9f8ff 55%,#f1ffed);overflow-x:hidden}
+header{text-align:center;padding:28px 16px 12px}
+h1{font-size:clamp(2rem,5vw,3.5rem);margin:0;color:#6353b8;text-shadow:2px 3px 0 #fff}
+.subtitle{font-size:1.05rem;margin:8px 0 0;color:#63708f}
+main{width:min(1050px,94vw);margin:18px auto 45px;display:grid;grid-template-columns:1.05fr .95fr;gap:22px}
+.panel{background:#ffffffdc;border:3px solid #fff;border-radius:28px;padding:22px;box-shadow:0 12px 35px #63708f20}
+.timer-panel{text-align:center}
+.scene{height:185px;border-radius:22px;background:linear-gradient(135deg,#b5eaff,#ffe0ed);display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:18px;position:relative}
+.scene img{width:100%;height:100%;object-fit:contain;display:none}
+.scene .emoji{font-size:6rem;filter:drop-shadow(0 5px 2px #ffffff80)}
+.time{font-size:clamp(3.5rem,10vw,6.5rem);font-weight:900;letter-spacing:3px;color:#5146a5;font-variant-numeric:tabular-nums;line-height:1.1;margin:10px 0}
+.time.done{color:#ef6595;animation:bop .5s infinite alternate}
+@keyframes bop{to{transform:scale(1.04)}}
+.status{min-height:26px;color:#71809b;font-weight:700}
+.controls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:15px 0}
+button{border:0;border-radius:16px;padding:12px 20px;font-size:1rem;font-weight:800;cursor:pointer;color:#27345b;box-shadow:0 4px 0 #00000012;transition:transform .12s}
+button:hover{transform:translateY(-2px)}button:active{transform:translateY(1px)}
+.primary{background:var(--mint)}.pause{background:var(--yellow)}.reset{background:#ffd0df}.small{padding:9px 13px;font-size:.9rem;background:#e9e5ff}
+.inputs{display:flex;justify-content:center;gap:8px;align-items:center;flex-wrap:wrap;margin:14px 0}
+.inputs label{font-size:.85rem;font-weight:800;display:grid;gap:5px}
+input[type=number]{width:76px;padding:10px;border:2px solid #dcd9f5;border-radius:12px;text-align:center;font-size:1.1rem;color:var(--ink);background:#fff}
+h2{margin:0 0 14px;color:#6252b6;font-size:1.35rem}
+.presets{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.preset{background:#e7f7ff}
+hr{border:0;border-top:2px dashed #e7e4f5;margin:20px 0}
+.upload{display:block;background:#fff1c9;padding:13px;border-radius:16px;text-align:center;font-weight:800;cursor:pointer}
+.upload input{display:none}
+.gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:13px}
+.tile{border:3px solid #eee9ff;border-radius:16px;overflow:hidden;aspect-ratio:1;position:relative;background:#f7f4ff;cursor:pointer}
+.tile img{width:100%;height:100%;object-fit:cover}
+.tile.selected{border-color:#7d6be3;box-shadow:0 0 0 3px #7d6be333}
+.tile button{position:absolute;right:4px;top:4px;padding:3px 7px;border-radius:9px;background:#fff;color:#a44}
+.hint{font-size:.88rem;color:#71809b;line-height:1.5}
+.progress{height:13px;background:#eeeafa;border-radius:99px;overflow:hidden;margin:16px 0 4px}
+.bar{height:100%;width:100%;background:linear-gradient(90deg,#91e6c4,#8bd7ff);border-radius:99px;transition:width .3s}
+footer{text-align:center;padding:0 15px 25px;color:#78829c;font-size:.85rem}
+@media(max-width:760px){main{grid-template-columns:1fr}.panel{padding:17px}.scene{height:160px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>🌈 Little Time Adventures ⏰</h1>
+  <p class="subtitle">A happy little timer for big little adventures!</p>
+</header>
+<main>
+  <section class="panel timer-panel">
+    <div class="scene" id="scene"><div class="emoji" id="defaultEmoji">🦁</div><img id="sceneImage" alt="Your selected picture"></div>
+    <div class="time" id="clock" aria-live="polite">05:00</div>
+    <div class="status" id="status">Ready when you are!</div>
+    <div class="progress"><div class="bar" id="bar"></div></div>
+    <div class="inputs">
+      <label>Minutes<input id="mins" type="number" min="0" max="999" value="5"></label>
+      <label>Seconds<input id="secs" type="number" min="0" max="59" value="0"></label>
+    </div>
+    <div class="controls">
+      <button class="primary" id="start">▶ Start</button>
+      <button class="pause" id="pause">⏸ Pause</button>
+      <button class="reset" id="reset">↻ Reset</button>
+    </div>
+    <h2>Quick timers</h2>
+    <div class="presets">
+      <button class="preset" data-time="60">1 min</button>
+      <button class="preset" data-time="300">5 min</button>
+      <button class="preset" data-time="600">10 min</button>
+      <button class="preset" data-time="900">15 min</button>
+      <button class="preset" data-time="1800">30 min</button>
+    </div>
+  </section>
+  <section class="panel">
+    <h2>🖼️ Make it yours!</h2>
+    <p class="hint">Upload your favourite pictures. Choose one to show in the timer scene. You can add as many as you like.</p>
+    <label class="upload">＋ Add your pictures
+      <input id="photoUpload" type="file" accept="image/*" multiple>
+    </label>
+    <div class="gallery" id="gallery"></div>
+    <p class="hint" id="galleryHint">Your uploaded pictures will appear here. Pick one to make it your timer buddy!</p>
+    <hr>
+    <h2>✨ Fun timer ideas</h2>
+    <div class="presets">
+      <button class="small" data-time="120">🧸 Toy tidy-up · 2 min</button>
+      <button class="small" data-time="300">📚 Reading · 5 min</button>
+      <button class="small" data-time="600">✏️ Homework · 10 min</button>
+      <button class="small" data-time="1200">🎨 Art time · 20 min</button>
+    </div>
+    <hr>
+    <p class="hint">💡 Tip: Keep this page open while the timer runs. When time is up, you'll see a celebration and hear a gentle beep (if your device allows sound).</p>
+  </section>
+</main>
+<footer>Made for curious kids • Have fun and make every minute count! ⭐</footer>
+<script>
+const $=id=>document.getElementById(id);
+let total=300,remaining=300,interval=null,running=false,selectedUrl=null;
+function format(s){const m=Math.floor(s/60),sec=s%60;return (m<10?'0':'')+m+':'+(sec<10?'0':'')+sec}
+function render(){
+  $('clock').textContent=format(remaining);
+  $('bar').style.width=(total?Math.max(0,remaining/total*100):0)+'%';
+  $('clock').classList.toggle('done',remaining===0);
+}
+function setTime(seconds){
+  clearInterval(interval);running=false;total=Math.max(0,seconds);remaining=total;
+  $('mins').value=Math.floor(total/60);$('secs').value=total%60;
+  $('status').textContent='Ready when you are!';render();
+}
+function readInputs(){
+  const m=Math.max(0,Math.min(999,parseInt($('mins').value)||0));
+  const s=Math.max(0,Math.min(59,parseInt($('secs').value)||0));
+  return m*60+s;
+}
+function beep(){
+  try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return;const ctx=new C();
+    [0,0.22,0.44].forEach((delay,i)=>{const osc=ctx.createOscillator(),gain=ctx.createGain();osc.connect(gain);gain.connect(ctx.destination);osc.frequency.value=[660,784,988][i];gain.gain.setValueAtTime(.0001,ctx.currentTime+delay);gain.gain.exponentialRampToValueAtTime(.16,ctx.currentTime+delay+.02);gain.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+delay+.18);osc.start(ctx.currentTime+delay);osc.stop(ctx.currentTime+delay+.2)});
+  }catch(e){}
+}
+$('start').addEventListener('click',()=>{
+  if(running)return;
+  if(remaining===0||total===0)setTime(readInputs());
+  if(remaining===0){$('status').textContent='Choose a time first!';return}
+  running=true;$('status').textContent='You’ve got this! 🌟';
+  interval=setInterval(()=>{remaining--;render();if(remaining<=0){clearInterval(interval);running=false;$('status').textContent='🎉 Time is up! Amazing job!';beep()}},1000);
+});
+$('pause').addEventListener('click',()=>{if(running){clearInterval(interval);running=false;$('status').textContent='Paused. Take your time!';}});
+$('reset').addEventListener('click',()=>setTime(total));
+$('mins').addEventListener('change',()=>setTime(readInputs()));
+$('secs').addEventListener('change',()=>setTime(readInputs()));
+document.querySelectorAll('[data-time]').forEach(b=>b.addEventListener('click',()=>setTime(Number(b.dataset.time))));
+$('photoUpload').addEventListener('change',e=>{
+  [...e.target.files].forEach(file=>{
+    if(!file.type.startsWith('image/'))return;
+    const url=URL.createObjectURL(file),tile=document.createElement('div');
+    tile.className='tile';const img=document.createElement('img');img.src=url;img.alt=file.name;
+    tile.appendChild(img);tile.addEventListener('click',()=>{
+      document.querySelectorAll('.tile').forEach(t=>t.classList.remove('selected'));tile.classList.add('selected');
+      $('sceneImage').src=url;$('sceneImage').style.display='block';$('defaultEmoji').style.display='none';selectedUrl=url;
+    });
+    $('gallery').appendChild(tile);$('galleryHint').textContent='Tap a picture to display it above your timer.';
+  });
+  e.target.value='';
+});
+render();
+</script>
+</body>
+</html>
